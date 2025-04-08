@@ -100,4 +100,22 @@ public class GlimpseMath {
 			SIMD4<Float>(tx,           ty,        tz, 1)
 		])
 	}
+	
+	public static func float4x4_translation(_ t: SIMD3<Float>) -> simd_float4x4 {
+		var matrix = matrix_identity_float4x4
+		matrix.columns.3 = SIMD4<Float>(t.x, t.y, t.z, 1)
+		return matrix
+	}
+
+	public static func float4x4_rotation(_ r: simd_quatf) -> simd_float4x4 {
+		return simd_float4x4(r)
+	}
+
+	public static func float4x4_scaling(_ s: SIMD3<Float>) -> simd_float4x4 {
+		var matrix = matrix_identity_float4x4
+		matrix.columns.0.x = s.x
+		matrix.columns.1.y = s.y
+		matrix.columns.2.z = s.z
+		return matrix
+	}
 }
