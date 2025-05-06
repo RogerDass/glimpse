@@ -18,22 +18,21 @@ public class GlimpseMath {
 	///   farZ: Far plane distance
 	///  Returns: Perspective matrix as float4x4
 	public static func perspective(
-		fovyRadians: Float,
+		fovYRadians fov: Float,
 		aspect: Float,
-		nearZ: Float,
-		farZ: Float) -> float4x4
+		nearZ n: Float,
+		farZ f: Float) -> float4x4
 	{
-		let yScale = 1.0 / tan(fovyRadians * 0.5)
-		let xScale = yScale / aspect
-		let zRange = farZ - nearZ
-		let zScale = -(farZ + nearZ) / zRange
-		let wzScale = -2.0 * farZ * nearZ / zRange
-		
+		let y = 1 / tan(fov * 0.5)      // cot(fov/2)
+		let x = y / aspect
+		let z = f / (f - n)             // maps z = near → 0, z = far → 1
+		let wz = -(f * n) / (f - n)     // ‑near * far / (far‑near)
+
 		return float4x4([
-			SIMD4<Float>(xScale,    0,      0,    0),
-			SIMD4<Float>(    0, yScale,     0,    0),
-			SIMD4<Float>(    0,    0,   zScale,  -1),
-			SIMD4<Float>(    0,    0,  wzScale,   0)
+			SIMD4<Float>( x,  0,  0,  0),
+			SIMD4<Float>( 0,  y,  0,  0),
+			SIMD4<Float>( 0,  0,  z,  1),   // note:  [2][3] = +1
+			SIMD4<Float>( 0,  0, wz,  0)
 		])
 	}
 
@@ -77,30 +76,24 @@ public class GlimpseMath {
 	///   nearZ: Near plane distance
 	///   farZ: Far plane distance
 	///  Returns: Orthographic projection matrix as float4x4
+	/// Metal‑style RH orthographic (z 0…1)
 	public static func orthographic(
-		left: Float,
-		right: Float,
-		bottom: Float,
-		top: Float,
-		nearZ: Float,
-		farZ: Float) -> float4x4
+		left l: Float,  right r: Float,
+		bottom b: Float, top t: Float,
+		nearZ n: Float,  farZ f: Float) -> float4x4
 	{
-		let rml = right - left
-		let tmb = top - bottom
-		let fmn = farZ - nearZ
-
-		let tx = -(right + left) / rml
-		let ty = -(top + bottom) / tmb
-		let tz = -(farZ + nearZ) / fmn
+		let rml = r - l
+		let tmb = t - b
+		let fmn = f - n
 
 		return float4x4([
-			SIMD4<Float>(2 / rml,       0,         0, 0),
-			SIMD4<Float>(0,       2 / tmb,         0, 0),
-			SIMD4<Float>(0,             0,  -2 / fmn, 0),
-			SIMD4<Float>(tx,           ty,        tz, 1)
+			SIMD4<Float>(       2 / rml,              0,        0, 0),
+			SIMD4<Float>(             0,        2 / tmb,        0, 0),
+			SIMD4<Float>(             0,              0,  1 / fmn, 0),   // z scale = 1/(far‑near)
+			SIMD4<Float>(-(r + l) / rml, -(t + b) / tmb, -n / fmn, 1)
 		])
 	}
-	
+
 	public static func float4x4_translation(_ t: SIMD3<Float>) -> simd_float4x4 {
 		var matrix = matrix_identity_float4x4
 		matrix.columns.3 = SIMD4<Float>(t.x, t.y, t.z, 1)

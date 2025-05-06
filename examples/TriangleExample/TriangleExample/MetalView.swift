@@ -70,7 +70,7 @@ struct MetalView: PlatformViewRepresentable {
 			length: vertices.count * MemoryLayout<simd_float2>.stride,
 			options: []
 		)!
-		RenderComponent.registerMesh(id: meshID, mesh: vertexBuffer)
+		RenderComponent.registerMesh(id: meshID, mesh: .simple(vertexBuffer))
 
 		// 2. Register shared material (reuse GlimpseRenderer's pipeline)
 		let materialID = UUID()
@@ -109,7 +109,6 @@ struct MetalView: PlatformViewRepresentable {
 				else {
 					glimpseRenderer.addEntity(entity, to: rootNode, with: [transform, spin, render])
 				}
-
 			}
 		}
 
