@@ -10,7 +10,9 @@
 		DB35C54A2D834DEB00B77CCC /* Glimpse.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Glimpse.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB35C56B2D83CEC300B77CCC /* glimpse.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = glimpse.xcodeproj; sourceTree = "<group>"; };
 		DB35C5C22D83D21400B77CCC /* Glimpse.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Glimpse.xcodeproj; sourceTree = "<group>"; };
+		DB771AE52DC26C7600674E51 /* Glimpse.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Glimpse.xcodeproj; sourceTree = "<group>"; };
 		DBDDA5B82D89345F005AC2E3 /* Glimpse.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Glimpse.xcodeproj; sourceTree = "<group>"; };
+		DBDDA6292DA50903005AC2E3 /* Glimpse.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Glimpse.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -60,7 +62,17 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		DB771AED2DC26C7600674E51 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
 		DBDDA5BB2D89345F005AC2E3 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DBDDA62F2DA50903005AC2E3 /* Products */ = {
 			isa = PBXGroup;
 			name = Products;
 			sourceTree = "<group>";
@@ -129,6 +141,10 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
+					ProductGroup = DB771AED2DC26C7600674E51 /* Products */;
+					ProjectRef = DB771AE52DC26C7600674E51 /* Glimpse.xcodeproj */;
+				},
+				{
 					ProductGroup = DB35C56E2D83CEC300B77CCC /* Products */;
 					ProjectRef = DB35C56B2D83CEC300B77CCC /* glimpse.xcodeproj */;
 				},
@@ -139,6 +155,10 @@
 				{
 					ProductGroup = DBDDA5BB2D89345F005AC2E3 /* Products */;
 					ProjectRef = DBDDA5B82D89345F005AC2E3 /* Glimpse.xcodeproj */;
+				},
+				{
+					ProductGroup = DBDDA62F2DA50903005AC2E3 /* Products */;
+					ProjectRef = DBDDA6292DA50903005AC2E3 /* Glimpse.xcodeproj */;
 				},
 			);
 			projectRoot = "";
