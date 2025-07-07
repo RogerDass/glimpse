@@ -1,12 +1,11 @@
 //
 //  System.swift
-//  TriangleExample
+//  Glimpse
 //
 //  Created by Roger D on 2025-04-08.
 //
-import Glimpse
 
-protocol System {
+public protocol System {
 	func update(deltaTime: Float, ecs: ECS, sceneNodes: [SceneNode])
 }
 
