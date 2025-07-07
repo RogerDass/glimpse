@@ -60,7 +60,7 @@ struct MetalView: PlatformViewRepresentable {
 		let rootNode = glimpseRenderer.rootNode
 
 		do {
-			let model = try ModelLoader.loadOBJ(named: "suzanne", in: .main, device: device)
+			let model = try ModelLoader.load(named: "suzanne", in: .main, device: device)
 			let pipelineVertexDesc = MTKMetalVertexDescriptorFromModelIO(model.meshes[0].vertexDescriptor)!
 
 			// rebuild our metal pipeline to reflect model vertex layout

@@ -14,18 +14,28 @@ public struct LoadedModel {
 }
 
 public enum ModelLoader {
-	public static func loadOBJ(
+	public static func load(
 		named name: String,
 		in bundle: Bundle = .main,
 		device: MTLDevice
 	) throws -> LoadedModel
 	{
-		// 1. Find the file
-		guard let url =
-				bundle.url(forResource: name, withExtension: "obj") else
+		// 1. Try each extension in priority order
+		let exts = ["usdz", "usd", "obj"]
+		let url: URL
+		if let found = exts
+			.lazy
+			.compactMap({ bundle.url(forResource: name, withExtension: $0) })
+			.first
 		{
-			throw NSError(domain: "ModelLoader", code: 1,
-						  userInfo: [NSLocalizedDescriptionKey: "Model \(name) not found"])
+			url = found
+		} else {
+			throw NSError(
+			  domain: "ModelLoader",
+			  code: 1,
+			  userInfo: [NSLocalizedDescriptionKey:
+						 "Model \(name) not found (tried \(exts.joined(separator: ",")))."]
+			)
 		}
 
 		// 2. Prepare allocator + vertex layout that matches your Metal shaders
