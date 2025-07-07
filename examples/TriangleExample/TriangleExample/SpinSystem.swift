@@ -16,7 +16,7 @@ struct SpinSystem: System {
 			if var transform = ecs.getComponent(for: entity) as TransformComponent?,
 			   let spin = ecs.getComponent(for: entity) as SpinComponent? {
 
-				let rotation = GlimpseMath.float4x4_rotation(
+				let rotation = Glimpse.Math.float4x4_rotation(
 					simd_quaternion(spin.speed * deltaTime, simd_float3(0, 0, 1))
 				)
 				transform.localTransform = transform.localTransform * rotation

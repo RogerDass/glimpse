@@ -13,11 +13,11 @@ import Glimpse
 struct MetalView: PlatformViewRepresentable {
 
 	class Coordinator: NSObject, MTKViewDelegate {
-		let renderer: GlimpseRenderer
+		let renderer: Glimpse.Renderer
 		let mtkDevice: MTLDevice
-		let systemManager = SystemManager()
+		let systemManager = Glimpse.SystemManager()
 
-		init?(renderer: GlimpseRenderer) {
+		init?(renderer: Glimpse.Renderer) {
 			self.renderer = renderer
 			self.mtkDevice = renderer.device
 			super.init()
@@ -43,7 +43,7 @@ struct MetalView: PlatformViewRepresentable {
 
 	func makeCoordinator() -> Coordinator {
 		let device = MTLCreateSystemDefaultDevice()!
-		guard let glimpseRenderer = GlimpseRenderer(device: device) else {
+		guard let glimpseRenderer = Glimpse.Renderer(device: device) else {
 			fatalError("Failed to create GlimpseRenderer")
 		}
 

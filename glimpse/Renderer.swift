@@ -9,7 +9,7 @@ import Metal
 import MetalKit
 import simd
 
-public class GlimpseRenderer {
+public class Renderer {
 	public let device: MTLDevice
 	private let commandQueue: MTLCommandQueue
 	public var pipelineState: MTLRenderPipelineState
@@ -118,7 +118,7 @@ public class GlimpseRenderer {
 	///
 	public func createEntitiesFromModel(
 		_ model: LoadedModel,
-		in renderer: GlimpseRenderer,
+		in renderer: Glimpse.Renderer,
 		parent: SceneNode? = nil
 	) {
 		for (index, mesh) in model.meshes.enumerated() {
@@ -181,8 +181,8 @@ public class GlimpseRenderer {
 		let center = simd_float3(0, 0, 0)
 		let up = simd_float3(0, 1, 0)
 
-		let viewMatrix = GlimpseMath.lookAt(eye: eye, center: center, up: up)
-		let projMatrix = GlimpseMath.perspective(fovYRadians: 60 * .pi / 180, aspect: aspect, nearZ: 0.1, farZ: 100)
+		let viewMatrix = Glimpse.Math.lookAt(eye: eye, center: center, up: up)
+		let projMatrix = Glimpse.Math.perspective(fovYRadians: 60 * .pi / 180, aspect: aspect, nearZ: 0.1, farZ: 100)
 
 		self.cameraMatrix = projMatrix * viewMatrix
 	}

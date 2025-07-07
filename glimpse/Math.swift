@@ -8,7 +8,7 @@
 
 import simd
 
-public class GlimpseMath {
+public class Math {
 
 	/// Returns a perspective projection matrix (right-handed)
 	///  Parameters:

@@ -21,9 +21,9 @@ public struct TransformComponent: Component {
 				rotation: simd_quatf = simd_quaternion(0, simd_float3(0, 1, 0)),
 				scale: simd_float3 = simd_float3(repeating: 1),
 				node: SceneNode? = nil) {
-		let t = GlimpseMath.float4x4_translation(translation)
-		let r = GlimpseMath.float4x4_rotation(rotation)
-		let s = GlimpseMath.float4x4_scaling(scale)
+		let t = Glimpse.Math.float4x4_translation(translation)
+		let r = Glimpse.Math.float4x4_rotation(rotation)
+		let s = Glimpse.Math.float4x4_scaling(scale)
 		self.localTransform = t * r * s
 		self.node = node
 	}
