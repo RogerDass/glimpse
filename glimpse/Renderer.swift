@@ -17,7 +17,9 @@ public class Renderer {
 	public var vertexDescriptor: MTLVertexDescriptor
 	public var vertexDescriptorModel: MTLVertexDescriptor
 
-	public var ecs: ECS
+	private var ecs: ECS
+	public var systems: SystemManager
+
 	public var rootNode: SceneNode
 
 	public var cameraMatrix: simd_float4x4 = matrix_identity_float4x4
@@ -28,6 +30,7 @@ public class Renderer {
 	public init?(device: MTLDevice) {
 		self.device = device
 		self.ecs = ECS()
+		self.systems = SystemManager()
 		self.rootNode = SceneNode(name: "Root")
 
 		guard let queue = device.makeCommandQueue() else { return nil }
@@ -87,6 +90,7 @@ public class Renderer {
 			library: library)
 	}
 
+
 	public func rebuildModelPipeline(with vd: MTLVertexDescriptor) {
 		let pso = buildPipeline(
 			device: device,
@@ -99,12 +103,13 @@ public class Renderer {
 	}
 
 
+	// MARK: — Entity Lifecycle
 	/// Adds an entity to both the scene graph and ECS
 	public func addEntity(_ entity: Entity, to parent: SceneNode? = nil, with components: [Component]) {
 		let node = SceneNode(name: "Entity_\(entity.id)", entity: entity)
 		(parent ?? rootNode).addChild(node)
 
-		for var component in components {
+		for component in components {
 			if var transform = component as? TransformComponent {
 				transform.node = node
 				transform.applyToNode()
@@ -115,20 +120,28 @@ public class Renderer {
 		}
 	}
 
+	/// Remove an entity completely: its SceneNode is detached from the graph,
+	/// and all its components are purged from the ECS.
+	public func removeEntity(_ entity: Entity) {
+		if let node = findNode(for: entity, in: rootNode) {
+			node.removeFromParent()
+		}
+		ecs.removeAllComponents(from: entity)
+	}
+
 	///
 	public func createEntitiesFromModel(
 		_ model: LoadedModel,
 		in renderer: Glimpse.Renderer,
 		parent: SceneNode? = nil
 	) {
-		for (index, mesh) in model.meshes.enumerated() {
-			let mdlMesh = model.mdlMeshes[index]
+		for (_, mesh) in model.meshes.enumerated() {
 
 			// Register the entire MTKMesh once (for all its submeshes)
 			let meshID = UUID()
 			RenderComponent.registerMesh(id: meshID, mesh: .complex(mesh))
 
-			for (submeshIndex, submesh) in mesh.submeshes.enumerated() {
+			for (_, _) in mesh.submeshes.enumerated() {
 				let entity = Entity()
 
 				let transform = TransformComponent(translation: simd_float3.zero)
@@ -153,7 +166,35 @@ public class Renderer {
 	}
 
 
+	// MARK: — Component Accessors
+	/// Retrieve one of an entity’s components (nil if it isn’t present).
+	public func getComponent<C: Component>(_ type: C.Type, for entity: Entity) -> C? {
+		return ecs.getComponent(type, for: entity)
+	}
 
+	/// Add or overwrite a component on an entity.
+	public func addComponent<C: Component>(_ component: C, for entity: Entity) {
+		ecs.addComponent(component, to: entity)
+	}
+
+	/// Remove a specific component type from an entity.
+	public func removeComponent<C: Component>(of type: C.Type, from entity: Entity) {
+		ecs.removeComponent(type, from: entity)
+	}
+
+	// MARK: — Bulk Queries
+	/// Return all entities that have all of the given component types.
+	func entities< A: Component, B: Component >(with _: A.Type, _ : B.Type) -> [Entity] {
+		return ecs.entities(with: [A.self, B.self])
+	}
+
+	/// Return all components of a given type across every entity.
+	func allComponents<C: Component>(of type: C.Type) -> [C] {
+		return ecs.allComponents(of: type)
+	}
+
+
+	// MARK: — Scene Graph
 	/// Recursively updates scene graph before rendering
 	public func updateSceneGraph(node: SceneNode) {
 		for child in node.children {
@@ -172,6 +213,17 @@ public class Renderer {
 		}
 		traverse(node: rootNode)
 		return allNodes
+	}
+
+	/// Find the SceneNode corresponding to an entity by walking the graph.
+	private func findNode(for entity: Entity, in node: SceneNode) -> SceneNode? {
+		if node.entity == entity { return node }
+		for child in node.children {
+			if let found = findNode(for: entity, in: child) {
+				return found
+			}
+		}
+		return nil
 	}
 
 
@@ -196,7 +248,7 @@ public class Renderer {
 		// Attributes ------------------------------------------------------
 		for i in 0..<31 {                               // Metal has 0–30 slots
 			guard let a = desc.attributes[i],
-				  a.format != .invalid else { continue }
+				a.format != .invalid else { continue }
 
 			print(String(
 				format: "  attr[%2d]  fmt %-8@  off %3d  buf %d",
@@ -207,7 +259,7 @@ public class Renderer {
 		// Layouts ---------------------------------------------------------
 		for i in 0..<31 {
 			guard let l = desc.layouts[i],
-				  l.stride != 0 else { continue }
+				l.stride != 0 else { continue }
 
 			print("  layout[\(i)]  stride \(l.stride)")
 		}
@@ -215,6 +267,12 @@ public class Renderer {
 	}
 
 
+	/// pre-draw updates (called once per frame)
+	public func update(deltaTime: Float) {
+		let allNodes = getAllSceneNodes()  // todo: shouldn't flatten scene hierarchy
+		systems.update(deltaTime: deltaTime, ecs: ecs, sceneNodes: allNodes)
+		updateSceneGraph(node: rootNode)
+	}
 
 	/// Called once per frame. Creates a command buffer, sets up the render pass,
 	/// encodes the draw call, and commits to the GPU.
@@ -231,17 +289,14 @@ public class Renderer {
 		let commandBuffer = commandQueue.makeCommandBuffer()!
 		let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
 
-		updateSceneGraph(node: rootNode)
-
 		// Group entities by mesh for instancing
 		var instanceData: [RenderKey: [simd_float4x4]] = [:]
-
 
 		for node in getAllSceneNodes() {
 
 			if let entity = node.entity,
-			   let transform = ecs.getComponent(for: entity) as TransformComponent?,
-			   let render = ecs.getComponent(for: entity) as RenderComponent? {
+			   let transform = ecs.getComponent(TransformComponent.self, for: entity),
+			   let render = ecs.getComponent(RenderComponent.self, for: entity) {
 
 				let key = RenderKey(meshID: render.meshID, materialID: render.materialID)
 				instanceData[key, default: []].append(transform.modelMatrix)
@@ -260,7 +315,7 @@ public class Renderer {
 
 			encoder.setRenderPipelineState(material)
 
-			var instanceBuffer = device.makeBuffer(
+			let instanceBuffer = device.makeBuffer(
 				bytes: transforms,
 				length: transforms.count * MemoryLayout<simd_float4x4>.stride,
 				options: []
@@ -275,7 +330,6 @@ public class Renderer {
 												length: colors.count *
 														MemoryLayout<SIMD4<Float>>.stride,
 												options: [])!
-
 
 
 			var uniforms = FrameUniforms(viewProjectionMatrix: cameraMatrix)

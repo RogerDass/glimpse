@@ -7,10 +7,14 @@
 
 import Foundation
 
-public struct Entity {
+public struct Entity: Hashable, Equatable {
 	public let id: UUID
 
-	public init(id: UUID = UUID()) {
+	public init() {
+		self.id = UUID()
+	}
+
+	public init(id: UUID) {
 		self.id = id
 	}
 }

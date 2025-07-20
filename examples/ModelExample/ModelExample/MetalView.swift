@@ -66,10 +66,7 @@ struct MetalView: PlatformViewRepresentable {
 			// rebuild our metal pipeline to reflect model vertex layout
 			glimpseRenderer.rebuildModelPipeline(with: pipelineVertexDesc)
 
-			// test to see both model and metal pipelines are the same
-			//glimpseRenderer.dumpVertexDescriptor("MTKMesh", pipelineVertexDesc)
-			//glimpseRenderer.dumpVertexDescriptor("pipeline", glimpseRenderer.vertexDescriptorModel)
-
+			// populate the scene graph with the model
 			glimpseRenderer.createEntitiesFromModel(model, in: glimpseRenderer, parent: rootNode)
 
 		} catch {

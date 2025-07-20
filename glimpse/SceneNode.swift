@@ -31,6 +31,10 @@ public class SceneNode {
 		child.parent = nil
 	}
 
+	public func removeFromParent() {
+		parent?.removeChild(self)
+	}
+
 	public var worldTransform: simd_float4x4 {
 		return (parent?.worldTransform ?? matrix_identity_float4x4) * transform
 	}

@@ -15,7 +15,6 @@ struct MetalView: PlatformViewRepresentable {
 	class Coordinator: NSObject, MTKViewDelegate {
 		let renderer: Glimpse.Renderer
 		let mtkDevice: MTLDevice
-		let systemManager = Glimpse.SystemManager()
 
 		init?(renderer: Glimpse.Renderer) {
 			self.renderer = renderer
@@ -28,10 +27,7 @@ struct MetalView: PlatformViewRepresentable {
 		}
 
 		func update(deltaTime: Float) {
-			let ecs = renderer.ecs
-			let allNodes = renderer.getAllSceneNodes()
-
-			systemManager.update(deltaTime: deltaTime, ecs: ecs, sceneNodes: allNodes)
+			renderer.update(deltaTime: deltaTime)
 		}
 
 		func draw(in view: MTKView) {
@@ -52,8 +48,8 @@ struct MetalView: PlatformViewRepresentable {
 		}
 
 		// register our custom spin system
-		coord.systemManager.add(SpinSystem())
-		coord.systemManager.add(ColorPulseSystem())
+		glimpseRenderer.systems.add(SpinSystem())
+		glimpseRenderer.systems.add(ColorPulseSystem())
 
 		// === scene setup example ===
 		// 1. Define & Register shared mesh

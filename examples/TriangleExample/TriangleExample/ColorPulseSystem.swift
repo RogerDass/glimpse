@@ -44,7 +44,7 @@ struct ColorPulseSystem: System {
 
 		for node in sceneNodes {
 			guard let entity = node.entity else {continue}
-			guard let render: RenderComponent = ecs.getComponent(for: entity) else { continue }
+			guard let render: RenderComponent = ecs.getComponent(RenderComponent.self, for: entity) else { continue }
 
 			let key = RenderKey(meshID: render.meshID, materialID: render.materialID)
 			entitiesByKey[key, default: []].append(entity)
@@ -56,7 +56,7 @@ struct ColorPulseSystem: System {
 			var colors: [simd_float4] = []
 
 			for entity in entities {
-				if let pulse: ColorPulseComponent = ecs.getComponent(for: entity) {
+				if let pulse: ColorPulseComponent = ecs.getComponent(ColorPulseComponent.self, for: entity) {
 					let speed = max(0.1, pulse.speed)
 					let hue = fmod(time * pulse.speed + pulse.phase, 1.0)
 					let brightness = (sinf(time * 2.0 + pulse.phase)) // range ~0.4 → 1.0
